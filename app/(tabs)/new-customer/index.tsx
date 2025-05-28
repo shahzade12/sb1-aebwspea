@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Check, X } from 'lucide-react-native';
@@ -41,9 +41,21 @@ export default function NewCustomerScreen() {
         email,
         address,
       });
-      router.push('/customers');
+      
+      // Show success message using Alert
+      Alert.alert(
+        'Success',
+        'Customer added successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.push('/customers')
+          }
+        ]
+      );
     } catch (error) {
       console.error('Error adding customer:', error);
+      Alert.alert('Error', 'Failed to add customer. Please try again.');
     } finally {
       setIsLoading(false);
     }

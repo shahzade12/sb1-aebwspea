@@ -23,18 +23,16 @@ export interface Customer {
   createdAt: string;
 }
 
+const CUSTOMERS_STORAGE_KEY = 'customers';
+
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadCustomers();
-  }, []);
-
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async () => {
     try {
       setIsLoading(true);
-      const storedCustomers = await AsyncStorage.getItem('customers');
+      const storedCustomers = await AsyncStorage.getItem(CUSTOMERS_STORAGE_KEY);
       if (storedCustomers) {
         setCustomers(JSON.parse(storedCustomers));
       }
@@ -44,19 +42,24 @@ export function useCustomers() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadCustomers();
+  }, [loadCustomers]);
 
   const saveCustomers = async (updatedCustomers: Customer[]) => {
     try {
-      await AsyncStorage.setItem('customers', JSON.stringify(updatedCustomers));
+      await AsyncStorage.setItem(CUSTOMERS_STORAGE_KEY, JSON.stringify(updatedCustomers));
       setCustomers(updatedCustomers);
     } catch (error) {
       console.error('Error saving customers:', error);
       Alert.alert('Error', 'Failed to save changes. Please try again.');
+      throw error; // Re-throw to handle in the component
     }
   };
 
-  const addCustomer = async (customerData: { 
+  const addCustomer = async (customerData: {
     name: string;
     phone?: string;
     email?: string;
@@ -78,9 +81,9 @@ export function useCustomers() {
     return newCustomer;
   };
 
-  const refreshCustomers = async () => {
+  const refreshCustomers = useCallback(async () => {
     await loadCustomers();
-  };
+  }, [loadCustomers]);
 
   return {
     customers,
@@ -106,22 +109,24 @@ export function useCustomer(customerId: string) {
         c.id === customerId ? { ...c, ...updatedData } : c
       );
       
-      await AsyncStorage.setItem('customers', JSON.stringify(updatedCustomers));
+      await AsyncStorage.setItem(CUSTOMERS_STORAGE_KEY, JSON.stringify(updatedCustomers));
       await refreshCustomers();
     } catch (error) {
       console.error('Error updating customer:', error);
       Alert.alert('Error', 'Failed to update customer. Please try again.');
+      throw error;
     }
   };
 
   const deleteCustomer = async () => {
     try {
       const updatedCustomers = customers.filter((c) => c.id !== customerId);
-      await AsyncStorage.setItem('customers', JSON.stringify(updatedCustomers));
+      await AsyncStorage.setItem(CUSTOMERS_STORAGE_KEY, JSON.stringify(updatedCustomers));
       await refreshCustomers();
     } catch (error) {
       console.error('Error deleting customer:', error);
       Alert.alert('Error', 'Failed to delete customer. Please try again.');
+      throw error;
     }
   };
 
@@ -148,7 +153,7 @@ export function useCustomer(customerId: string) {
       c.id === customerId ? updatedCustomer : c
     );
 
-    await AsyncStorage.setItem('customers', JSON.stringify(updatedCustomers));
+    await AsyncStorage.setItem(CUSTOMERS_STORAGE_KEY, JSON.stringify(updatedCustomers));
     await refreshCustomers();
   };
 
