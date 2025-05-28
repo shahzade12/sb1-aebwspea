@@ -5,53 +5,67 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Mail, Lock, Phone } from 'lucide-react-native';
+import { ArrowLeft, Mail, Phone } from 'lucide-react-native';
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
   const [isEmail, setIsEmail] = useState(true);
   const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (!identifier || !password) {
-      setError('Please fill in all fields');
+  const handleResetPassword = async () => {
+    if (!identifier) {
+      Alert.alert('Error', 'Please enter your email or phone number');
       return;
     }
 
     if (isEmail && !identifier.includes('@')) {
-      setError('Please enter a valid email address');
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
     if (!isEmail && !/^\+?[\d\s-]{8,}$/.test(identifier)) {
-      setError('Please enter a valid phone number');
+      Alert.alert('Error', 'Please enter a valid phone number');
       return;
     }
 
-    // TODO: Implement actual login logic
-    router.replace('/customers');
+    setIsLoading(true);
+    try {
+      // TODO: Implement password reset logic
+      Alert.alert(
+        'Success',
+        `Password reset instructions have been sent to your ${
+          isEmail ? 'email' : 'phone'
+        }`,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send reset instructions');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>
-            Sign in to continue managing your customers
-          </Text>
-        </View>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.back()}>
+        <ArrowLeft size={24} color="#007AFF" />
+      </TouchableOpacity>
+
+      <View style={styles.content}>
+        <Text style={styles.title}>Reset Password</Text>
+        <Text style={styles.subtitle}>
+          Enter your email address or phone number to reset your password
+        </Text>
 
         <View style={styles.form}>
           <View style={styles.toggleContainer}>
@@ -112,41 +126,17 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputWrapper}>
-              <Lock size={20} color="#8E8E93" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-            </View>
-          </View>
-
           <TouchableOpacity
-            style={styles.forgotPassword}
-            onPress={() => router.push('/auth/forgot-password')}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            style={[styles.resetButton, isLoading && styles.resetButtonDisabled]}
+            onPress={handleResetPassword}
+            disabled={isLoading}>
+            <Text style={styles.resetButtonText}>
+              {isLoading ? 'Sending...' : 'Reset Password'}
+            </Text>
           </TouchableOpacity>
-
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Sign In</Text>
-          </TouchableOpacity>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-              <Text style={styles.footerLink}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </View>
   );
 }
 
@@ -155,13 +145,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F2F2F7',
   },
-  scrollContent: {
-    flexGrow: 1,
-    padding: 20,
+  backButton: {
+    margin: 16,
   },
-  header: {
-    marginTop: 60,
-    marginBottom: 40,
+  content: {
+    flex: 1,
+    padding: 20,
   },
   title: {
     fontFamily: 'Inter-Bold',
@@ -173,6 +162,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 16,
     color: '#8E8E93',
+    marginBottom: 32,
   },
   form: {
     backgroundColor: '#FFFFFF',
@@ -214,7 +204,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   label: {
     fontFamily: 'Inter-Medium',
@@ -240,46 +230,18 @@ const styles = StyleSheet.create({
     color: '#000000',
     padding: 12,
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 20,
-  },
-  forgotPasswordText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 14,
-    color: '#007AFF',
-  },
-  errorText: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: '#FF3B30',
-    marginBottom: 16,
-  },
-  loginButton: {
+  resetButton: {
     backgroundColor: '#007AFF',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    marginTop: 8,
   },
-  loginButtonText: {
+  resetButtonDisabled: {
+    opacity: 0.7,
+  },
+  resetButtonText: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     color: '#FFFFFF',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  footerText: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 15,
-    color: '#8E8E93',
-  },
-  footerLink: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 15,
-    color: '#007AFF',
   },
 });

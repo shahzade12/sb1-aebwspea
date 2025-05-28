@@ -3,6 +3,7 @@ import { useCurrencySettings } from '@/hooks/useCurrencySettings';
 import { Globe, Mail, User, Info, Trash, DollarSign } from 'lucide-react-native';
 import CurrencySelector from '@/components/CurrencySelector';
 import { useState } from 'react';
+import { router } from 'expo-router';
 
 export default function SettingsScreen() {
   const { 
@@ -31,8 +32,42 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+            // TODO: Implement logout logic
+            router.replace('/auth/login');
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Account</Text>
+        
+        <TouchableOpacity 
+          style={styles.settingItem}
+          onPress={() => router.push('/settings/profile')}>
+          <View style={styles.settingIconContainer}>
+            <User size={20} color="#007AFF" />
+          </View>
+          <View style={styles.settingContent}>
+            <Text style={styles.settingTitle}>Profile Settings</Text>
+            <Text style={styles.settingSubtitle}>Manage your account details</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Currency Settings</Text>
         
@@ -77,16 +112,6 @@ export default function SettingsScreen() {
         
         <TouchableOpacity style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
-            <User size={20} color="#007AFF" />
-          </View>
-          <View style={styles.settingContent}>
-            <Text style={styles.settingTitle}>Account</Text>
-            <Text style={styles.settingSubtitle}>Manage your profile</Text>
-          </View>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.settingItem}>
-          <View style={styles.settingIconContainer}>
             <Globe size={20} color="#007AFF" />
           </View>
           <View style={styles.settingContent}>
@@ -123,8 +148,15 @@ export default function SettingsScreen() {
           <Trash size={20} color="#FFFFFF" />
           <Text style={styles.dangerButtonText}>Clear All Data</Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.dangerButton, styles.logoutButton]}
+          onPress={handleLogout}>
+          <Text style={styles.dangerButtonText}>Logout</Text>
+        </TouchableOpacity>
+        
         <Text style={styles.dangerNote}>
-          This will permanently delete all customer data and reset your settings.
+          Clearing data will permanently delete all customer data and reset your settings.
         </Text>
       </View>
       
@@ -250,6 +282,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 10,
     width: '80%',
+    marginBottom: 12,
+  },
+  logoutButton: {
+    backgroundColor: '#8E8E93',
   },
   dangerButtonText: {
     fontFamily: 'Inter-SemiBold',
