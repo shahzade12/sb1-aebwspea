@@ -1,7 +1,9 @@
 import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, Alert } from 'react-native';
 import { useCurrencySettings } from '@/hooks/useCurrencySettings';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Globe, Mail, User, Info, Trash, DollarSign } from 'lucide-react-native';
 import CurrencySelector from '@/components/CurrencySelector';
+import LanguageSelector from '@/components/LanguageSelector';
 import { useState } from 'react';
 import { router } from 'expo-router';
 
@@ -12,20 +14,21 @@ export default function SettingsScreen() {
     defaultCurrency, 
     setDefaultCurrency 
   } = useCurrencySettings();
+  const { t, language } = useLanguage();
   const [showCurrencySelector, setShowCurrencySelector] = useState(false);
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
   const handleClearData = () => {
     Alert.alert(
-      'Clear All Data',
+      t('common.delete'),
       'Are you sure you want to delete all customers and settings? This action cannot be undone.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         { 
-          text: 'Delete Everything', 
+          text: t('settings.clearData'), 
           style: 'destructive',
           onPress: () => {
-            // Clear all data functionality would be implemented here
-            Alert.alert('Data Cleared', 'All customer data has been deleted');
+            Alert.alert(t('common.success'), 'All customer data has been deleted');
           }
         }
       ]
@@ -34,15 +37,14 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
+      t('auth.logout'),
       'Are you sure you want to logout?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Logout',
+          text: t('auth.logout'),
           style: 'destructive',
           onPress: () => {
-            // TODO: Implement logout logic
             router.replace('/auth/login');
           }
         }
@@ -53,7 +55,7 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
+        <Text style={styles.sectionTitle}>{t('settings.account')}</Text>
         
         <TouchableOpacity 
           style={styles.settingItem}
@@ -62,14 +64,32 @@ export default function SettingsScreen() {
             <User size={20} color="#007AFF" />
           </View>
           <View style={styles.settingContent}>
-            <Text style={styles.settingTitle}>Profile Settings</Text>
+            <Text style={styles.settingTitle}>{t('settings.profile')}</Text>
             <Text style={styles.settingSubtitle}>Manage your account details</Text>
           </View>
         </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Currency Settings</Text>
+        <Text style={styles.sectionTitle}>{t('settings.language')}</Text>
+        
+        <TouchableOpacity 
+          style={styles.settingItem}
+          onPress={() => setShowLanguageSelector(true)}>
+          <View style={styles.settingIconContainer}>
+            <Globe size={20} color="#007AFF" />
+          </View>
+          <View style={styles.settingContent}>
+            <Text style={styles.settingTitle}>{t('settings.language')}</Text>
+            <Text style={styles.settingValue}>
+              {language === 'en' ? t('settings.english') : t('settings.persian')}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('settings.currency')}</Text>
         
         <TouchableOpacity 
           style={styles.settingItem}
@@ -108,24 +128,14 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>App Settings</Text>
-        
-        <TouchableOpacity style={styles.settingItem}>
-          <View style={styles.settingIconContainer}>
-            <Globe size={20} color="#007AFF" />
-          </View>
-          <View style={styles.settingContent}>
-            <Text style={styles.settingTitle}>Language</Text>
-            <Text style={styles.settingValue}>English</Text>
-          </View>
-        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>{t('settings.about')}</Text>
         
         <TouchableOpacity style={styles.settingItem}>
           <View style={styles.settingIconContainer}>
             <Mail size={20} color="#007AFF" />
           </View>
           <View style={styles.settingContent}>
-            <Text style={styles.settingTitle}>Contact Support</Text>
+            <Text style={styles.settingTitle}>{t('settings.support')}</Text>
             <Text style={styles.settingSubtitle}>Get help with the app</Text>
           </View>
         </TouchableOpacity>
@@ -135,7 +145,7 @@ export default function SettingsScreen() {
             <Info size={20} color="#007AFF" />
           </View>
           <View style={styles.settingContent}>
-            <Text style={styles.settingTitle}>About</Text>
+            <Text style={styles.settingTitle}>{t('settings.about')}</Text>
             <Text style={styles.settingSubtitle}>Version 1.0.0</Text>
           </View>
         </TouchableOpacity>
@@ -146,13 +156,13 @@ export default function SettingsScreen() {
           style={styles.dangerButton}
           onPress={handleClearData}>
           <Trash size={20} color="#FFFFFF" />
-          <Text style={styles.dangerButtonText}>Clear All Data</Text>
+          <Text style={styles.dangerButtonText}>{t('settings.clearData')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={[styles.dangerButton, styles.logoutButton]}
           onPress={handleLogout}>
-          <Text style={styles.dangerButtonText}>Logout</Text>
+          <Text style={styles.dangerButtonText}>{t('auth.logout')}</Text>
         </TouchableOpacity>
         
         <Text style={styles.dangerNote}>
@@ -176,6 +186,11 @@ export default function SettingsScreen() {
           setShowCurrencySelector(false);
         }}
         onClose={() => setShowCurrencySelector(false)}
+      />
+
+      <LanguageSelector
+        visible={showLanguageSelector}
+        onClose={() => setShowLanguageSelector(false)}
       />
     </ScrollView>
   );
