@@ -11,7 +11,7 @@ export default function NewCustomerScreen() {
   const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { addCustomer } = useCustomers();
+  const { addCustomer, refreshCustomers } = useCustomers();
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -41,6 +41,9 @@ export default function NewCustomerScreen() {
         email,
         address,
       });
+      
+      // Refresh the customer list
+      await refreshCustomers();
       
       // Show success message using Alert
       Alert.alert(
