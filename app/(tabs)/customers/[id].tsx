@@ -54,6 +54,14 @@ export default function CustomerDetailsScreen() {
     }
   };
 
+  const handleBackPress = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/customers');
+    }
+  };
+
   return (
     <>
       <Stack.Screen
@@ -61,7 +69,7 @@ export default function CustomerDetailsScreen() {
           title: customer.name,
           headerShown: true,
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
               <ArrowLeft size={24} color="#007AFF" />
             </TouchableOpacity>
           ),
