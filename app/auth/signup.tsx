@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Mail, Lock, Phone, User, ArrowLeft } from 'lucide-react-native';
@@ -18,36 +19,61 @@ export default function SignupScreen() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSignup = () => {
+  const validateForm = () => {
     if (!name || !identifier || !password || !confirmPassword) {
       setError('Please fill in all fields');
-      return;
+      return false;
+    }
+
+    if (name.length < 2) {
+      setError('Name must be at least 2 characters long');
+      return false;
     }
 
     if (isEmail && !identifier.includes('@')) {
       setError('Please enter a valid email address');
-      return;
+      return false;
     }
 
     if (!isEmail && !/^\+?[\d\s-]{8,}$/.test(identifier)) {
       setError('Please enter a valid phone number');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      return false;
     }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSignup = async () => {
+    setError('');
+    
+    if (!validateForm()) {
       return;
     }
 
-    // TODO: Implement actual signup logic
-    router.replace('/customers');
+    setIsLoading(true);
+    try {
+      // TODO: Implement actual signup logic here
+      // For now, we'll simulate a successful signup
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.replace('/customers');
+    } catch (err) {
+      setError('Failed to create account. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -109,13 +135,17 @@ export default function SignupScreen() {
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Full Name</Text>
-            <View style={styles.inputWrapper}>
+            <View style={[styles.inputWrapper, error && styles.inputError]}>
               <User size={20} color="#8E8E93" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter your full name"
                 value={name}
-                onChangeText={setName}
+                onChangeText={(text) => {
+                  setName(text);
+                  setError('');
+                }}
+                autoComplete="name"
               />
             </View>
           </View>
@@ -124,7 +154,7 @@ export default function SignupScreen() {
             <Text style={styles.label}>
               {isEmail ? 'Email Address' : 'Phone Number'}
             </Text>
-            <View style={styles.inputWrapper}>
+            <View style={[styles.inputWrapper, error && styles.inputError]}>
               {isEmail ? (
                 <Mail size={20} color="#8E8E93" style={styles.inputIcon} />
               ) : (
@@ -136,45 +166,62 @@ export default function SignupScreen() {
                   isEmail ? 'Enter your email' : 'Enter your phone number'
                 }
                 value={identifier}
-                onChangeText={setIdentifier}
+                onChangeText={(text) => {
+                  setIdentifier(text);
+                  setError('');
+                }}
                 keyboardType={isEmail ? 'email-address' : 'phone-pad'}
                 autoCapitalize="none"
+                autoComplete={isEmail ? 'email' : 'tel'}
               />
             </View>
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
-            <View style={styles.inputWrapper}>
+            <View style={[styles.inputWrapper, error && styles.inputError]}>
               <Lock size={20} color="#8E8E93" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Create a password"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setError('');
+                }}
                 secureTextEntry
+                autoComplete="new-password"
               />
             </View>
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.inputWrapper}>
+            <View style={[styles.inputWrapper, error && styles.inputError]}>
               <Lock size={20} color="#8E8E93" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Confirm your password"
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  setError('');
+                }}
                 secureTextEntry
+                autoComplete="new-password"
               />
             </View>
           </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-            <Text style={styles.signupButtonText}>Create Account</Text>
+          <TouchableOpacity
+            style={[styles.signupButton, isLoading && styles.signupButtonDisabled]}
+            onPress={handleSignup}
+            disabled={isLoading}>
+            <Text style={styles.signupButtonText}>
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -272,6 +319,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
+  inputError: {
+    borderColor: '#FF3B30',
+  },
   inputIcon: {
     marginLeft: 12,
   },
@@ -294,6 +344,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
+  },
+  signupButtonDisabled: {
+    opacity: 0.7,
   },
   signupButtonText: {
     fontFamily: 'Inter-SemiBold',

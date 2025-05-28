@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Mail, Lock, Phone } from 'lucide-react-native';
@@ -16,26 +17,51 @@ export default function LoginScreen() {
   const [isEmail, setIsEmail] = useState(true);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const validateForm = () => {
     if (!identifier || !password) {
       setError('Please fill in all fields');
-      return;
+      return false;
     }
 
     if (isEmail && !identifier.includes('@')) {
       setError('Please enter a valid email address');
-      return;
+      return false;
     }
 
     if (!isEmail && !/^\+?[\d\s-]{8,}$/.test(identifier)) {
       setError('Please enter a valid phone number');
+      return false;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleLogin = async () => {
+    setError('');
+    
+    if (!validateForm()) {
       return;
     }
 
-    // TODO: Implement actual login logic
-    router.replace('/customers');
+    setIsLoading(true);
+    try {
+      // TODO: Implement actual login logic here
+      // For now, we'll simulate a successful login
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.replace('/customers');
+    } catch (err) {
+      setError('Invalid credentials. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,7 +119,7 @@ export default function LoginScreen() {
             <Text style={styles.label}>
               {isEmail ? 'Email Address' : 'Phone Number'}
             </Text>
-            <View style={styles.inputWrapper}>
+            <View style={[styles.inputWrapper, error && styles.inputError]}>
               {isEmail ? (
                 <Mail size={20} color="#8E8E93" style={styles.inputIcon} />
               ) : (
@@ -105,23 +131,31 @@ export default function LoginScreen() {
                   isEmail ? 'Enter your email' : 'Enter your phone number'
                 }
                 value={identifier}
-                onChangeText={setIdentifier}
+                onChangeText={(text) => {
+                  setIdentifier(text);
+                  setError('');
+                }}
                 keyboardType={isEmail ? 'email-address' : 'phone-pad'}
                 autoCapitalize="none"
+                autoComplete={isEmail ? 'email' : 'tel'}
               />
             </View>
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
-            <View style={styles.inputWrapper}>
+            <View style={[styles.inputWrapper, error && styles.inputError]}>
               <Lock size={20} color="#8E8E93" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter your password"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setError('');
+                }}
                 secureTextEntry
+                autoComplete="password"
               />
             </View>
           </View>
@@ -134,8 +168,13 @@ export default function LoginScreen() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Sign In</Text>
+          <TouchableOpacity
+            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+            onPress={handleLogin}
+            disabled={isLoading}>
+            <Text style={styles.loginButtonText}>
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -230,6 +269,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
+  inputError: {
+    borderColor: '#FF3B30',
+  },
   inputIcon: {
     marginLeft: 12,
   },
@@ -261,6 +303,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
+  },
+  loginButtonDisabled: {
+    opacity: 0.7,
   },
   loginButtonText: {
     fontFamily: 'Inter-SemiBold',
