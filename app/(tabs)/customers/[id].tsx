@@ -128,7 +128,7 @@ export default function CustomerDetailsScreen() {
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
           {activeTab === 'received' && (
             <>
-              <CustomerSectionHeader title="Received" count={customer.received.length} />
+              <CustomerSectionHeader title="Received\" count={customer.received.length} />
               {customer.received.length === 0 ? (
                 <View style={styles.emptySection}>
                   <Text style={styles.emptyText}>
